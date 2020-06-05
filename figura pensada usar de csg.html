@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Plantilla Base</title>
+    <style>
+      html, body { margin: 0; padding: 0; overflow: hidden; }
+    </style>
+  </head>
+  <body>
+    <script src="js/three.js"></script>
+	<script src="js/controls/OrbitControls.js"></script>
+	<script src="js/csg.js"></script>
+	<script src="js/THREE.CSG.js"></script>
+    <script>
+		var scene, aspect, camera, renderer, controls;
+		init();
+		animate();
+		function init(){
+			//INICIALIZACIÓN
+	        scene = new THREE.Scene();
+	        aspect = window.innerWidth / window.innerHeight;
+	        camera = new THREE.PerspectiveCamera( 75, aspect, 0.1, 1000);
+	        renderer = new THREE.WebGLRenderer();
+	        renderer.setSize( window.innerWidth, window.innerHeight );
+	        document.body.appendChild( renderer.domElement );
+			controls = new THREE.OrbitControls( camera, renderer.domElement );
+			
+			//ELEMENTOS COMUNES
+			var size = 10;
+			var arrowSize = 1;
+			var divisions = size;
+			var origin = new THREE.Vector3( 0, 0, 0 );
+			var x = new THREE.Vector3( 1, 0, 0 );
+			var y = new THREE.Vector3( 0, 1, 0 );
+		  	var z = new THREE.Vector3( 0, 0, 1 );
+		  	var color = new THREE.Color( 0x333333 );
+		  	var colorR = new THREE.Color( 0xAA3333 );
+		  	var colorG = new THREE.Color( 0x33AA33 );
+		  	var colorB = new THREE.Color( 0x333366 );
+			
+		  	//CREAR LAS GRILLAS PARA EL ESCENARIO
+		  	var axesHelper = new THREE.AxesHelper( size );
+			scene.add( axesHelper );
+			
+		  	var gridHelperXZ = new THREE.GridHelper( size, divisions, color, color );
+			scene.add( gridHelperXZ );
+            
+            //ROTARLAS PARA QUE QUEDEN EN EL ESPACIO ADECUADO
+            gridHelperXZ.rotateOnWorldAxis ( y, THREE.Math.degToRad(90) );
+
+            //CREAR ILUMINACIÓN
+            var ambient = new THREE.AmbientLight( 0xffffff, 2 );
+            scene.add( ambient );
+			
+            var pointLight = new THREE.PointLight( 0xffffff, 1, 100 );
+            pointLight.position.set( -5, 1, 5 );
+            scene.add( pointLight );
+			
+            var pointLight = new THREE.PointLight( 0xffffff, .5, 100 );
+            pointLight.position.set( 5, 1, -5 );
+            scene.add( pointLight );
+			
+			//CREAR LAS GEOMETRÍAS
+			var boxGeometry = new THREE.BoxGeometry( 2,2, 2 );
+			var sphereGeometry = new THREE.SphereGeometry( 1.25, 32, 32 );
+                        var cylindergeometry = new THREE.CylinderGeometry( 0.75, 0.75, 2, 32 );
+                        var cylindergeometry2 = new THREE.CylinderGeometry(0.75, 0.75, 3, 32 );
+						
+			//CREAR LOS MATERIALES
+                        var material1 = new THREE.MeshStandardMaterial( { color: colorR, metalness: 0.5, roughness: 0.1 } );
+			var material2 = new THREE.MeshStandardMaterial( { color: colorG, metalness: 0.5, roughness: 0.1 } );
+			
+			//CREAR LAS MALLAS
+			var cube = new THREE.Mesh( boxGeometry, material1 );
+			var sphere = new THREE.Mesh( sphereGeometry, material2 );
+                        var cylinder = new THREE.Mesh( cylindergeometry, material2 );
+                        var cylinder2 = new THREE.Mesh( cylindergeometry, material2 );
+                        var cylinder3 = new THREE.Mesh( cylindergeometry, material2 );
+                        var cylinder4 = new THREE.Mesh( cylindergeometry2, material2  );
+                        var cylinder5 = new THREE.Mesh( cylindergeometry2, material2   );
+			sphere.translateX( 0 );
+			sphere.translateY( 1.5);
+			sphere.translateZ( 0 );
+
+                        cube.translateX( 0 );
+			cube.translateY( 1.5 );
+			cube.translateZ( 0 );
+ 
+                        cylinder.translateX( 0 );
+			cylinder.translateY( 1.5);
+			cylinder.translateZ( 0 );
+
+                        cylinder2.translateX( 0 );
+			cylinder2.translateY( 1.5 );
+			cylinder2.translateZ( 0 );
+                        cylinder2.rotation.x=Math.PI/2
+                       
+                        cylinder3.translateX( 0 );
+			cylinder3.translateY( 1.5 );
+			cylinder3.translateZ( 0 );
+                        cylinder3.rotation.z=Math.PI/2
+    
+                        cylinder4.translateX( 0 );
+			cylinder4.translateY( 1.5 );
+			cylinder4.translateZ( 2 );
+
+                        cylinder5.translateX( 0 );
+			cylinder5.translateY( 1.5 );
+			cylinder5.translateZ( 2 );
+                        cylinder5.rotation.x=Math.PI/2
+			
+			//CONVERTIR A CSG
+			var boxCSG = THREE.CSG.fromMesh( cube );
+			var sphereCSG = THREE.CSG.fromMesh( sphere );
+                        var cylinderCSG = THREE.CSG.fromMesh( cylinder );
+                        var cylinder2CSG = THREE.CSG.fromMesh( cylinder2 );
+                        var cylinder3CSG = THREE.CSG.fromMesh( cylinder3 );
+                        var cylinder4CSG = THREE.CSG.fromMesh( cylinder4 );
+                        var cylinder5CSG = THREE.CSG.fromMesh( cylinder5 );
+			
+			//APLICAR LAS OPERACIONES
+			var result = boxCSG.intersect( sphereCSG ).subtract( cylinderCSG ).subtract( cylinder2CSG ).subtract( cylinder3CSG );
+			var result2 = cylinder4CSG.union( cylinder5CSG );
+
+
+			//CONVERTIR A THREE
+			cube = THREE.CSG.toMesh( result );
+			cube.material = material1;
+                        cylinder
+                        cylinder = THREE.CSG.toMesh( result2 );
+			cylinder.material = material1;
+			
+			//AGREGAR A LA ESCENA LOS DIFERENTES ELEMENTOS
+			//scene.add( cube );
+                       // scene.add( cylinder );
+                        scene.add( cylinder4 );
+                        scene.add( cylinder5 );
+			//scene.add( sphere );		//ACTIVE PARA VISUALIZAR LA ESFERA
+
+			camera.position.x = 2;
+			camera.position.y = 2;
+		  	camera.position.z = 5;
+			camera.lookAt( origin );
+		}
+		function animate(){
+			requestAnimationFrame( animate );
+			controls.update();
+			render();
+		}
+		function render(){
+			renderer.render( scene, camera );
+		}
+    </script>
+  </body>
+</html>
